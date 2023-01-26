@@ -1,8 +1,98 @@
 ---
-title: "Activity 2 - Day 1"
+title: "Activity 2: Simple Linear Regression"
+author: "Debit Paudel"
+date: "1/24/2023"
 output: github_document
 ---
 
-```{setup, include=FALSE}
+```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+
+```{r Packages, Task 2}
+library(tidyverse)
+library(tidymodels)
+```
+
+```{r Task3 Data Loading}
+
+hfi <- readr::read_csv("https://www.openintro.org/data/csv/hfi.csv")
+```
+
+```{r Task3 Data Filtering}
+hfi_2016 <- hfi %>% filter(year==2016)
+hfi_2016 %>% select(pf_score, pf_expression_control)
+
+```
+
+## Simple Linear Regression
+
+Below is a scatterplot of the two variables (note that the independent is on the horizontal axis and the dependent is on the vertical axis).
+
+```{r Task3 Plotting relationship}
+
+library(ggplot2)
+
+# Basic scatter plot with labels
+scatplt <- ggplot(hfi_2016, aes(x=pf_expression_control, y=pf_score)) + geom_point(size=2, color="blue")
+scatplt <- scatplt + ggtitle("The relationship between personal freedom score & expression control \n ") +
+  xlab("Personal Freedom Expression Control") + ylab("Personal Freedom Score")
+
+# Change the color, size and face of the title, x and y axis labels
+
+scatplt <- scatplt + theme(
+plot.title = element_text(color="red", size=14, 
+                          face="bold.italic", hjust = 0.5),
+axis.title.x = element_text(color="black", size=14, face="bold"),
+axis.title.y = element_text(color="black", size=14, face="bold")
+)
+
+scatplt
+
+```
+
+This data appears to follow a linear trend, and some R output for placing a linear model on this scatterplot, using regression analysis, is given below:
+
+```{r alternative to Task4}
+scatplt <- scatplt + geom_smooth(method=lm, se=FALSE, color="black")
+
+scatplt
+
+```
+
+At this point, we want to build the actual model and examine characteristics that can be used to access the model. This can be accomplished in R using the linear model command "lm".
+
+```{r Task5}
+m1 <- lm(pf_score~pf_expression_control, data=hfi_2016)
+
+#summary(m1)
+tidy(m1)
+
+```
+
+## Correlation Coefficients
+
+```{r}
+cor(hfi_2016[,c("pf_expression_control","pf_score")], use="everything")
+```
+
+## Residual Analysis 
+
+```{r}
+
+library(lmtest, pos=4)
+
+bptest(pf_score ~ pf_expression_control, varformula = ~ fitted.values(m1), studentize=TRUE, data=hfi_2016)
+
+plot(m1)
+
+```
+
+## Confidence Interval for the Slope: 
+
+```{r}
+
+confint(m1, level=0.95)
+
+```
+
